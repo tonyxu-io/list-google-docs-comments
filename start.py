@@ -10,7 +10,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/drive','https://www.googleapis.com/auth/drive.readonly','https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive',
+          'https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.file']
+
 
 def main():
     """Shows basic usage of the Drive v3 API.
@@ -46,16 +48,28 @@ def main():
         print('No files found.')
     else:
         for file in files:
+            # If file was commented/edited by me
             if file.get('capabilities').get('canComment') and file.get('modifiedByMeTime') and not file.get('trashed'):
-                print(u'\nFile Name: {0}'.format(file['name']))
-                print(u'File Owner: {0}'.format(file['owners'][0]['displayName']))
-                print(u'File URL: {0}'.format(file['webViewLink']))
-                comments = service.comments().list(fileId=file['id'],fields="comments(author,content)", pageSize=100).execute()
-                comments = comments.get('comments',[])
-                for comment in comments:
-                    if comment['author']['me']:
-                        print('Comments:')
-                        print(u'{0}'.format(comment['content']))
+                try:
+                    # Get comments with author and content
+                    comments = service.comments().list(
+                        fileId=file['id'], fields="comments(author,content)", pageSize=100).execute()
+                    comments = comments.get('comments', [])
+                    myComments = []
+                    for comment in comments:
+                        if comment['author']['me']:
+                            # Check for my comment
+                            myComments.append(comment['content'])
+                    if myComments:
+                        print(u'\nFile Name: {0}'.format(file['name']))
+                        print(u'File Owner: {0}'.format(
+                            file['owners'][0]['displayName']))
+                        print(u'File URL: {0}'.format(file['webViewLink']))
+                        for comment in myComments:
+                            print(u'* {0}'.format(comment))
+                except:
+                    print('Unexpected error with file: {0}'.format(file))
+
 
 if __name__ == '__main__':
     main()

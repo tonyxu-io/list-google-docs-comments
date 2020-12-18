@@ -12,5 +12,6 @@ pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-
 
 ## Getting Started
 
-1. Download credentials.json from https://developers.google.com/drive/api/v3/quickstart/python#step_1_turn_on_the and put to this folder
-2. Run python start.py
+1. Download credentials.json from https://developers.google.com/drive/api/v3/quickstart/python#step_1_turn_on_the and put to this folder as `credentials.json`
+2. Configure `http://localhost:56111/` as Authorized redirect URIs in Google Cloud OAuth Client settings
+3. Run python start.py
