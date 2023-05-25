@@ -1,0 +1,4 @@
+colored==1.4.4
+google_api_python_client==2.87.0
+google_auth_oauthlib==1.0.0
+protobuf==4.23.1

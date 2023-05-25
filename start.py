@@ -8,6 +8,7 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from colored import fg, attr
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive',
@@ -48,13 +49,12 @@ def main():
         print('No files found.')
     else:
         for file in files:
-            # If file was commented/edited by me
-            if file.get('capabilities').get('canComment') and file.get('modifiedByMeTime') and not file.get('trashed'):
+            # If it's a Google Document that was commented/edited by me
+            if file.get('capabilities').get('canComment') and file.get('modifiedByMeTime') and "docs.google.com/document/" in file['webViewLink'] and not file.get('trashed'):
                 try:
                     # Get comments with author and content
                     comments = service.comments().list(
-                        fileId=file['id'], fields="comments(author,content)", pageSize=100).execute()
-                    comments = comments.get('comments', [])
+                        fileId=file['id'], fields="comments(author,content)", pageSize=100).execute().get('comments', [])
                     myComments = []
                     for comment in comments:
                         if comment['author']['me']:
@@ -66,9 +66,14 @@ def main():
                             file['owners'][0]['displayName']))
                         print(u'File URL: {0}'.format(file['webViewLink']))
                         for comment in myComments:
-                            print(u'* {0}'.format(comment))
-                except:
-                    print('Unexpected error with file: {0}'.format(file))
+                            print(fg('green') + '• ' + comment + attr('reset'))
+                except Exception as e:
+                    print(file)
+                    print(u'\nFile Name: {0}'.format(file['name']))
+                    print(u'File Owner: {0}'.format(
+                        file['owners'][0]['displayName']))
+                    print(u'File URL: {0}'.format(file['webViewLink']))
+                    print(fg('red'), 'Unexpected error: ', e, attr('reset'))
 
 
 if __name__ == '__main__':
